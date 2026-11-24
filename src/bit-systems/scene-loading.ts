@@ -8,10 +8,12 @@ import {
   NavMesh,
   Networked,
   PhysicsShape,
+  Rigidbody,
   SceneLoader,
   ScenePreviewCamera,
   SceneRoot,
   Skybox,
+  TextTag,
   TrimeshTag
 } from "../bit-components";
 import Sky from "../components/skybox";
@@ -76,7 +78,8 @@ function* loadScene(
       if ((o as Mesh).isMesh) {
         // TODO animated objects should not be static
         (o as Mesh).reflectionProbeMode = "static";
-        hasMesh ||= true;
+        // A mesh without vertices is nothing to collide with (see the trimesh check below).
+        hasMesh ||= ((o as Mesh).geometry?.attributes?.position?.count ?? 0) > 0;
       }
       if ((o as any).isReflectionProbe) {
         o.updateMatrices();
@@ -129,12 +132,17 @@ function* loadScene(
     world.eid2obj.get(scene)?.traverse(obj => {
       const eid = obj.eid;
       if (!eid || !hasComponent(world, TrimeshTag, eid)) return;
-      let hasGeometry = false;
-      obj.traverse(child => {
-        const position = (child as Mesh).isMesh ? (child as Mesh).geometry?.attributes?.position : undefined;
-        if (position && position.count > 0) hasGeometry = true;
-      });
-      if (hasGeometry) return;
+      // Counted the way the shape is built: bodies and texts below the node are left out of it
+      // (src/systems/bit-physics.ts, NO_PHYSICS_COMPONENTS).
+      const hasGeometry = (node: typeof obj): boolean => {
+        if (node !== obj && node.eid && (hasComponent(world, Rigidbody, node.eid) || hasComponent(world, TextTag, node.eid))) {
+          return false;
+        }
+        const position = (node as Mesh).isMesh ? (node as Mesh).geometry?.attributes?.position : undefined;
+        if (position && position.count > 0) return true;
+        return node.children.some(hasGeometry);
+      };
+      if (hasGeometry(obj)) return;
       console.warn("The scene's trimesh node has no geometry and was ignored.");
       removeComponent(world, PhysicsShape, eid);
       removeComponent(world, TrimeshTag, eid);
