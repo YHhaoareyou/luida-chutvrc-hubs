@@ -7,6 +7,7 @@ import screenfull from "screenfull";
 
 import configs from "../utils/configs";
 import { isLockedDownDemoRoom } from "../utils/hub-utils";
+import { isUiHidden } from "../utils/hidden-ui";
 import { VR_DEVICE_AVAILABILITY } from "../utils/vr-caps-detect";
 import { canShare } from "../utils/share";
 import styles from "../assets/stylesheets/ui-root.scss";
@@ -875,7 +876,10 @@ class UIRoot extends Component {
   renderEntryStartPanel = () => {
     const { hasAcceptedProfile, hasChangedNameOrPronouns } = this.props.store.state.activity;
     const isLockedDownDemo = isLockedDownDemoRoom();
-    const promptForNameAndAvatarBeforeEntry = this.props.hubIsBound ? !hasAcceptedProfile : !hasChangedNameOrPronouns;
+    // A room that hides the profile editor still lets first-time visitors in, with the name and avatar they were given.
+    const promptForNameAndAvatarBeforeEntry =
+      !isUiHidden(this.props.hub, "profile") &&
+      (this.props.hubIsBound ? !hasAcceptedProfile : !hasChangedNameOrPronouns);
 
     // TODO: What does onEnteringCanceled do?
     return (
@@ -1181,7 +1185,7 @@ class UIRoot extends Component {
 
     const isLockedDownDemo = isLockedDownDemoRoom();
 
-    const showObjectList = enteredOrWatching && !isLockedDownDemo;
+    const showObjectList = enteredOrWatching && !isLockedDownDemo && !isUiHidden(this.props.hub, "objects");
     const showECSObjectsMenuButton = qsTruthy("ecsDebug");
 
     const streamer = getCurrentStreamer();
@@ -1232,12 +1236,13 @@ class UIRoot extends Component {
                 reason: LeaveReason.createRoom
               })
           },
-          !isLockedDownDemo && {
-            id: "user-profile",
-            label: <FormattedMessage id="more-menu.profile" defaultMessage="Change Name & Avatar" />,
-            icon: AvatarIcon,
-            onClick: () => this.setSidebar("profile")
-          },
+          !isLockedDownDemo &&
+            !isUiHidden(this.props.hub, "profile") && {
+              id: "user-profile",
+              label: <FormattedMessage id="more-menu.profile" defaultMessage="Change Name & Avatar" />,
+              icon: AvatarIcon,
+              onClick: () => this.setSidebar("profile")
+            },
           {
             id: "favorite-rooms",
             label: <FormattedMessage id="more-menu.favorite-rooms" defaultMessage="Favorite Rooms" />,
@@ -1278,7 +1283,8 @@ class UIRoot extends Component {
             onClick: () => this.setSidebar("room-info")
           },
           (this.props.breakpoint === "sm" || this.props.breakpoint === "md") &&
-            (this.props.hub.entry_mode !== "invite" || this.props.hubChannel.can("update_hub")) && {
+            (this.props.hub.entry_mode !== "invite" || this.props.hubChannel.can("update_hub")) &&
+            !isUiHidden(this.props.hub, "invite") && {
               id: "invite",
               label: <FormattedMessage id="more-menu.invite" defaultMessage="Invite" />,
               icon: InviteIcon,
@@ -1356,12 +1362,13 @@ class UIRoot extends Component {
             icon: WarningCircleIcon,
             href: configs.link("issue_report", "https://docs.hubsfoundation.org/help.html")
           },
-          entered && {
-            id: "start-tour",
-            label: <FormattedMessage id="more-menu.start-tour" defaultMessage="Start Tour" />,
-            icon: SupportIcon,
-            onClick: () => this.props.scene.systems.tips.resetTips()
-          },
+          entered &&
+            !isUiHidden(this.props.hub, "tips") && {
+              id: "start-tour",
+              label: <FormattedMessage id="more-menu.start-tour" defaultMessage="Start Tour" />,
+              icon: SupportIcon,
+              onClick: () => this.props.scene.systems.tips.resetTips()
+            },
           configs.feature("show_docs_link") && {
             id: "help",
             label: <FormattedMessage id="more-menu.help" defaultMessage="Help" />,

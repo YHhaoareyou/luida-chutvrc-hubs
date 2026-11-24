@@ -19,6 +19,7 @@ import { changeHub } from "../change-hub";
 import { EntityID } from "../utils/networking-types";
 import { LinkType } from "../inflators/link";
 import { ObjectMenuTransformFlags } from "../inflators/object-menu-transform";
+import { isUiHidden } from "../utils/hidden-ui";
 
 const menuQuery = defineQuery([LinkHoverMenu]);
 const hoveredLinksQuery = defineQuery([HoveredRemoteRight, Link, Not(LinkInitializing)]);
@@ -66,7 +67,9 @@ async function handleLinkClick(world: HubsWorld, button: EntityID) {
   const src = APP.getString(Link.url[linkEid])!;
   if (!src) return;
   const url = new URL(src);
-  const linkType = Link.type[linkEid];
+  // Using an avatar link changes the visitor's avatar, so it opens as a plain link where the room hides the profile.
+  const linkType =
+    Link.type[linkEid] === LinkType.AVATAR && isUiHidden(APP.hub, "profile") ? LinkType.LINK : Link.type[linkEid];
   switch (linkType) {
     case LinkType.LINK:
       await exitImmersive();
@@ -101,7 +104,8 @@ function updateButtonText(world: HubsWorld, menu: EntityID, button: EntityID) {
   const text = findChildWithComponent(world, TextTag, button)!;
   const textObj = world.eid2obj.get(text)! as TroikaText;
   const linkEid = LinkHoverMenu.targetObjectRef[menu];
-  const linkType = Link.type[linkEid];
+  const linkType =
+    Link.type[linkEid] === LinkType.AVATAR && isUiHidden(APP.hub, "profile") ? LinkType.LINK : Link.type[linkEid];
   let label = "";
   switch (linkType) {
     case LinkType.LINK:

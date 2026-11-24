@@ -17,6 +17,7 @@ import { fetchReticulumAuthenticated, getReticulumFetchUrl } from "../utils/phoe
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { CreateTile, MediaTile } from "./room/MediaTiles";
 import { SignInMessages } from "./auth/SignInModal";
+import { isUiHidden } from "../utils/hidden-ui";
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 
@@ -356,7 +357,10 @@ class MediaBrowserContainer extends Component {
     const isSceneApiType = urlSource === "scenes";
     const isFavorites = urlSource === "favorites";
     const showCustomOption =
-      !isFavorites && (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub"));
+      !isFavorites &&
+      (!isSceneApiType || this.props.hubChannel.canOrWillIfCreator("update_hub")) &&
+      // A custom avatar URL is worn straight away, so it goes with the profile editor.
+      !(urlSource === "avatars" && isUiHidden(APP.hub, "profile"));
     const entries = (this.state.result && this.state.result.entries) || [];
     const hideSearch = urlSource === "favorites";
     const showEmptyStringOnNoResult = urlSource !== "avatars" && urlSource !== "scenes";

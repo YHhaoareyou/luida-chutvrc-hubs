@@ -7,6 +7,7 @@ import { handleExitTo2DInterstitial } from "../../utils/vr-interstitial";
 import { useInviteUrl } from "./hooks/useInviteUrl";
 import { useIntl } from "react-intl";
 import { shareInviteUrl } from "../../utils/share";
+import { isUiHidden } from "../../utils/hidden-ui";
 
 export function InvitePopoverContainer({ hub, hubChannel, scene, store, ...rest }) {
   const intl = useIntl();
@@ -48,7 +49,7 @@ export function InvitePopoverContainer({ hub, hubChannel, scene, store, ...rest 
     !inviteRequired || !canGenerateInviteUrl
   );
 
-  if (inviteRequired && !canGenerateInviteUrl) {
+  if ((inviteRequired && !canGenerateInviteUrl) || isUiHidden(hub, "invite")) {
     return null;
   }
 

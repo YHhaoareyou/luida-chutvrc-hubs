@@ -18,6 +18,7 @@ import { ReactComponent as DeleteIcon } from "../icons/Delete.svg";
 import { ReactComponent as AvatarIcon } from "../icons/Avatar.svg";
 import { ReactComponent as HideIcon } from "../icons/Hide.svg";
 import { FormattedMessage } from "react-intl";
+import { isUiHidden } from "../../utils/hidden-ui";
 
 function MyMenuItems({ onOpenProfile }) {
   return (
@@ -129,7 +130,7 @@ export function ObjectMenuContainer({ hubChannel, scene, onOpenProfile, onGoToOb
   let isAvatar = false;
   if (isMe(activeObject)) {
     isAvatar = true;
-    menuItems = <MyMenuItems onOpenProfile={onOpenProfile} />;
+    menuItems = !isUiHidden(APP.hub, "profile") && <MyMenuItems onOpenProfile={onOpenProfile} />;
   } else if (isPlayer(activeObject)) {
     isAvatar = true;
     menuItems = <PlayerMenuItems hubChannel={hubChannel} activeObject={activeObject} deselectObject={deselectObject} />;

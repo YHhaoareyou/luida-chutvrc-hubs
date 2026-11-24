@@ -7,6 +7,7 @@ import { UserProfileSidebarContainer } from "./UserProfileSidebarContainer";
 import { useCan } from "./hooks/useCan";
 import { useRoomPermissions } from "./hooks/useRoomPermissions";
 import { useRole } from "./hooks/useRole";
+import { isUiHidden } from "../../utils/hidden-ui";
 
 export function userFromPresence(sessionId, presence, micPresences, mySessionId, voiceEnabled) {
   const meta = presence.metas[presence.metas.length - 1];
@@ -96,6 +97,8 @@ export function PeopleSidebarContainer({
   const selectedPerson = people.find(person => person.id === selectedPersonId);
   const setSelectedPerson = useCallback(
     person => {
+      // Your own entry opens the profile editor, so it does nothing when the room hides that.
+      if (person.isMe && isUiHidden(APP.hub, "profile")) return;
       setSelectedPersonId(person.id);
     },
     [setSelectedPersonId]

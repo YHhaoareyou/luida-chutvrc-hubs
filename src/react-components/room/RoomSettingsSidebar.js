@@ -22,6 +22,7 @@ import { Checkbox } from "@mozilla/lilypad-ui";
 import configs from "../../utils/configs";
 import { addons, isAddonEnabled } from "../../addons";
 import { shouldUseNewLoader } from "../../hubs";
+import { isUiHidden } from "../../utils/hidden-ui";
 
 /** The media servers by the number a room stores */
 const SFU_NAMES = { 0: "Dialog", 1: "Sora", 2: "LiveKit" };
@@ -170,7 +171,7 @@ export function RoomSettingsSidebar({
             {...register("entry_mode")}
           />
         </RadioInputField>
-        {entryMode === "invite" && (
+        {entryMode === "invite" && !isUiHidden(room, "invite") && (
           <>
             {canShare() && (
               <>

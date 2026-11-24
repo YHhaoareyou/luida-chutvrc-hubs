@@ -1,4 +1,5 @@
 import { paths } from "./userinput/paths";
+import { isUiHidden } from "../utils/hidden-ui";
 
 // The output of this system is activeTip. There are named tips (eg locomotion) that each have validators.
 //
@@ -75,6 +76,8 @@ const VALIDATORS = {
   },
   invite: function (_userinput, scene, hub) {
     if (hub && hub.entry_mode === "invite") return INVALID;
+    // This step points at the Invite button, which the room may hide.
+    if (isUiHidden(hub, "invite")) return INVALID;
     return scene.is("copresent") ? FINISH : VALID;
   },
   end: function () {

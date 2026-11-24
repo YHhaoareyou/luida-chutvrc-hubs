@@ -6,6 +6,7 @@ import { ToastTip } from "./ToastTip";
 import { useEffect } from "react";
 import { discordBridgesForPresences, hasEmbedPresences } from "../../utils/phoenix-utils";
 import { Tooltip } from "./Tooltip";
+import { isUiHidden } from "../../utils/hidden-ui";
 
 const isEndTooltipStep = step =>
   ["tips.desktop.end", "tips.mobile.end", "tips.desktop.menu", "tips.mobile.menu"].includes(step);
@@ -80,7 +81,7 @@ export function TipContainer({ inLobby, inRoom, isStreaming, isEmbedded, scene, 
   const isBroadcasting = discordBridges.length > 0;
 
   if (inLobby) {
-    if (lobbyTipDismissed) {
+    if (lobbyTipDismissed || isUiHidden(APP.hub, "tips")) {
       return null;
     }
 
@@ -90,7 +91,8 @@ export function TipContainer({ inLobby, inRoom, isStreaming, isEmbedded, scene, 
       </Tip>
     );
   } else if (inRoom) {
-    if (onboardingTipId) {
+    // The streaming, Discord and embedding notices below stay: they tell visitors who else may see the room.
+    if (onboardingTipId && !isUiHidden(APP.hub, "tips")) {
       return <Tooltip onPrev={onPrevTip} onNext={onNextTip} onDismiss={onSkipOnboarding} step={onboardingTipId} />;
     }
 

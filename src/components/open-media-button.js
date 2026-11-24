@@ -2,6 +2,7 @@ import { isLocalHubsUrl, isLocalHubsSceneUrl, isHubsRoomUrl, isLocalHubsAvatarUr
 import { guessContentType } from "../utils/media-url-utils";
 import { handleExitTo2DInterstitial } from "../utils/vr-interstitial";
 import { changeHub } from "../change-hub";
+import { isUiHidden } from "../utils/hidden-ui";
 
 AFRAME.registerComponent("open-media-button", {
   schema: {
@@ -23,7 +24,7 @@ AFRAME.registerComponent("open-media-button", {
         let label = "open link";
         if (!this.data.onlyOpenLink) {
           let hubId;
-          if (await isLocalHubsAvatarUrl(src)) {
+          if (!isUiHidden(window.APP.hub, "profile") && (await isLocalHubsAvatarUrl(src))) {
             label = "use avatar";
           } else if ((await isLocalHubsSceneUrl(src)) && mayChangeScene) {
             label = "use scene";
@@ -49,7 +50,7 @@ AFRAME.registerComponent("open-media-button", {
       if (this.data.onlyOpenLink) {
         await exitImmersive();
         window.open(this.src);
-      } else if (await isLocalHubsAvatarUrl(this.src)) {
+      } else if (!isUiHidden(window.APP.hub, "profile") && (await isLocalHubsAvatarUrl(this.src))) {
         const avatarId = new URL(this.src).pathname.split("/").pop();
         window.APP.store.update({ profile: { avatarId } });
         this.el.sceneEl.emit("avatar_updated");
