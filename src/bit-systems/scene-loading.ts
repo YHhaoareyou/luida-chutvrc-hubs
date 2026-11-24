@@ -7,6 +7,7 @@ import {
   HeightFieldTag,
   NavMesh,
   Networked,
+  PhysicsShape,
   SceneLoader,
   ScenePreviewCamera,
   SceneRoot,
@@ -120,6 +121,24 @@ function* loadScene(
         sceneEl.systems.nav.loadMesh(navMesh, "character");
       }
     }
+
+    // The scene editor writes a trimesh node for the floor plan even when nothing in the scene is
+    // collidable, and that node then has no geometry. A mesh shape without triangles makes the
+    // physics engine abort on every step, which hangs the page. Such a node is dropped here, before
+    // its shape is built, and the scene gets its floor collision the way a scene without one does.
+    world.eid2obj.get(scene)?.traverse(obj => {
+      const eid = obj.eid;
+      if (!eid || !hasComponent(world, TrimeshTag, eid)) return;
+      let hasGeometry = false;
+      obj.traverse(child => {
+        const position = (child as Mesh).isMesh ? (child as Mesh).geometry?.attributes?.position : undefined;
+        if (position && position.count > 0) hasGeometry = true;
+      });
+      if (hasGeometry) return;
+      console.warn("The scene's trimesh node has no geometry and was ignored.");
+      removeComponent(world, PhysicsShape, eid);
+      removeComponent(world, TrimeshTag, eid);
+    });
 
     // Create scene physics
     if (findChildWithComponent(world, TrimeshTag, scene) || findChildWithComponent(world, HeightFieldTag, scene)) {
