@@ -182,6 +182,17 @@ AFRAME.registerComponent("cursor-controller", {
       this.intersection = null;
 
       if (!this.enabled || !cursorPose) {
+        // A cursor that is switched off hovers nothing. Its last hover used to stay, and with it the
+        // action sets of that hover (resolve-action-sets.js). That could leave a hand teleporting for
+        // good: a trigger pull while hovering nothing starts a teleport; if the ray reaches a button
+        // in that same frame, the hover lands on the button and then freezes, because a teleporting
+        // hand's cursor is off (cursor-toggling-system.js). From then on the button's click binding
+        // (priority 2) masked the trigger release that ends the teleport (priority 1,
+        // bindings/webxr-user.js), so the teleport never ended and the cursor never came back.
+        const stale = left ? hoveredLeftRemoteQuery(APP.world) : hoveredRightRemoteQuery(APP.world);
+        for (let i = 0; i < stale.length; i++) {
+          removeComponent(APP.world, left ? HoveredRemoteLeft : HoveredRemoteRight, stale[i]);
+        }
         return;
       }
 
