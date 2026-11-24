@@ -114,6 +114,9 @@ export function inflateModel(world: HubsWorld, rootEid: number, { model }: Model
     // Re-use the the uuid for animation targeting.
     // TODO: This is weird... Should we be rewriting the animations instead?
     replacement.uuid = old.uuid;
+    // The name the scene's author gave the node goes with it, so that code looking an object up
+    // by name (add-ons, scripts) still finds a node that was swapped for a text or a mesh.
+    replacement.name = old.name;
 
     old.parent!.add(replacement);
     old.removeFromParent();
