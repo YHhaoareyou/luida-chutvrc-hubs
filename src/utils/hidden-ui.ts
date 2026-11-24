@@ -3,9 +3,11 @@
 // hub.user_data.hide_ui, an array of the names below. It is read from the hub every time, since a room's user_data
 // can change while the page is open and the page can move to another room.
 
-export type HideableUi = "invite" | "tips" | "profile" | "objects";
+// "rooms" covers the menu entries that take a visitor to other rooms: creating one, the list of favorites,
+// and marking this room as a favorite.
+export type HideableUi = "invite" | "tips" | "profile" | "objects" | "rooms";
 
-const HIDEABLE_UI: readonly HideableUi[] = ["invite", "tips", "profile", "objects"];
+const HIDEABLE_UI: readonly HideableUi[] = ["invite", "tips", "profile", "objects", "rooms"];
 
 type HubWithUserData = { user_data?: any } | null | undefined;
 

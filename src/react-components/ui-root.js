@@ -1193,7 +1193,8 @@ class UIRoot extends Component {
 
     const renderEntryFlow = (!enteredOrWatching && this.props.hub) || this.isWaitingForAutoExit();
 
-    const canCreateRoom = !configs.feature("disable_room_creation") || configs.isAdmin();
+    const showOtherRooms = !isUiHidden(this.props.hub, "rooms");
+    const canCreateRoom = showOtherRooms && (!configs.feature("disable_room_creation") || configs.isAdmin());
     const canCloseRoom = this.props.hubChannel && !!this.props.hubChannel.canOrWillIfCreator("close_hub");
     const isModerator = this.props.hubChannel && this.props.hubChannel.canOrWillIfCreator("kick_users") && !isMobileVR;
 
@@ -1243,7 +1244,7 @@ class UIRoot extends Component {
               icon: AvatarIcon,
               onClick: () => this.setSidebar("profile")
             },
-          {
+          showOtherRooms && {
             id: "favorite-rooms",
             label: <FormattedMessage id="more-menu.favorite-rooms" defaultMessage="Favorite Rooms" />,
             icon: FavoritesIcon,
@@ -1290,19 +1291,20 @@ class UIRoot extends Component {
               icon: InviteIcon,
               onClick: () => this.props.scene.emit("action_invite")
             },
-          this.isFavorited()
-            ? {
-                id: "unfavorite-room",
-                label: <FormattedMessage id="more-menu.unfavorite-room" defaultMessage="Unfavorite Room" />,
-                icon: StarIcon,
-                onClick: () => this.toggleFavorited()
-              }
-            : {
-                id: "favorite-room",
-                label: <FormattedMessage id="more-menu.favorite-room" defaultMessage="Favorite Room" />,
-                icon: StarOutlineIcon,
-                onClick: () => this.toggleFavorited()
-              },
+          showOtherRooms &&
+            (this.isFavorited()
+              ? {
+                  id: "unfavorite-room",
+                  label: <FormattedMessage id="more-menu.unfavorite-room" defaultMessage="Unfavorite Room" />,
+                  icon: StarIcon,
+                  onClick: () => this.toggleFavorited()
+                }
+              : {
+                  id: "favorite-room",
+                  label: <FormattedMessage id="more-menu.favorite-room" defaultMessage="Favorite Room" />,
+                  icon: StarOutlineIcon,
+                  onClick: () => this.toggleFavorited()
+                }),
           isModerator &&
             entered && {
               id: "streamer-mode",

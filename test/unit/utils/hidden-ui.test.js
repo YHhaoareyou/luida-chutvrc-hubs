@@ -21,9 +21,9 @@ test("hides the parts the room lists", t => {
   t.false(isUiHidden(hub, "objects"));
 });
 
-test("knows all four parts", t => {
-  const hub = hubWith(["invite", "tips", "profile", "objects"]);
-  t.deepEqual([...hiddenUi(hub)].sort(), ["invite", "objects", "profile", "tips"]);
+test("knows every part", t => {
+  const hub = hubWith(["invite", "tips", "profile", "objects", "rooms"]);
+  t.deepEqual([...hiddenUi(hub)].sort(), ["invite", "objects", "profile", "rooms", "tips"]);
 });
 
 test("ignores unknown names", t => {
