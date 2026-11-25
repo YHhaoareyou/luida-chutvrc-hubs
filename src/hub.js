@@ -1421,6 +1421,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
   hubPhxChannel.on("message", ({ session_id, type, body, from }) => {
+    // Messages the LUIDA add-on sends between the participants of a session (it listens on the
+    // channel itself). They are not chat: nothing of them belongs in the log or in front of a
+    // participant in VR.
+    if (type === "luida") return;
+
     const getAuthor = () => {
       const userInfo = hubChannel.presence.state[session_id];
       if (from) {
